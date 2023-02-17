@@ -21,7 +21,8 @@ type Foo struct {
 func main() {
 	args := os.Args[1:]
 	if len(args) < 1 {
-		panic("missing volume argument")
+		fmt.Printf("current sound volume is %v\n", int(C.LIB_getSystemVolume()*100))
+		return
 	}
 
 	argVolume, err := strconv.Atoi(args[0])
@@ -37,7 +38,7 @@ func main() {
 	}
 
 	var prevVolume float32 = float32(C.LIB_getSystemVolume())
-	fmt.Printf("get result: %v\n", prevVolume)
+	fmt.Printf("previous volume: %v\n", prevVolume)
 
 	// increaseResult := C.LIB_increaseSystemVolume()
 
@@ -48,5 +49,7 @@ func main() {
 	setResult := C.LIB_setSystemVolume(c_newVolume)
 	fmt.Printf("result: %v\n", setResult)
 
-	fmt.Printf("updated volume: %v\n", C.LIB_getSystemVolume())
+	updatedVolume := C.LIB_getSystemVolume()
+
+	fmt.Printf("updated volume: %v, %v\n", int(updatedVolume*100), updatedVolume)
 }

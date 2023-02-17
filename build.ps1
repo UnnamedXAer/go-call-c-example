@@ -1,1 +1,1 @@
-go build -o a.exe -x 
+go build -o a.exe # -x 

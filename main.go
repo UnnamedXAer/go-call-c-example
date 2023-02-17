@@ -1,11 +1,16 @@
 package main
 
-// #cgo LDFLAGS: -L. -llibrary
-// #include "tmp.h"
+// #cgo LDFLAGS: -lole32 -loleaut32
+// #include "sys-volume-bridge.h"
 import "C"
+
+// https://blog.marlin.org/cgo-referencing-c-library-in-go
+// https://stackoverflow.com/questions/50722026/how-to-get-and-set-system-volume-in-windows
 
 import (
 	"fmt"
+	"os"
+	"strconv"
 	"unsafe"
 )
 
@@ -13,11 +18,35 @@ type Foo struct {
 	ptr unsafe.Pointer
 }
 
-// func NewFoo() Foo {
-// 	var foo Foo
-// 	foo.ptr = C.LIB_geMyFoo()
-// }
-
 func main() {
-	fmt.Printf("\nresult: %v", C.getMyInt())
+	args := os.Args[1:]
+	if len(args) < 1 {
+		panic("missing volume argument")
+	}
+
+	argVolume, err := strconv.Atoi(args[0])
+	if err != nil {
+		panic(err)
+	}
+
+	if argVolume < 0 {
+		panic("volume cannot be lesser than 0")
+	}
+	if argVolume > 100 {
+		panic("volume cannot be greater than 100")
+	}
+
+	var prevVolume float32 = float32(C.LIB_getSystemVolume())
+	fmt.Printf("get result: %v\n", prevVolume)
+
+	// increaseResult := C.LIB_increaseSystemVolume()
+
+	var newVolume float32 = float32(argVolume) / 100.0
+	var c_newVolume C.float = C.float(newVolume)
+	fmt.Printf("arg volume: %v, new volume: %v, c_volume: %v\n", argVolume, newVolume, c_newVolume)
+	fmt.Print("setting new volume... ")
+	setResult := C.LIB_setSystemVolume(c_newVolume)
+	fmt.Printf("result: %v\n", setResult)
+
+	fmt.Printf("updated volume: %v\n", C.LIB_getSystemVolume())
 }
